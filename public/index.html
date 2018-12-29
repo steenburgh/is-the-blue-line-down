@@ -1,0 +1,289 @@
+</!DOCTYPE html>
+<!-- Yep, all the css and js is inlined. This page is truly fucked -->
+<html>
+<head>
+	<title>Is the Blue Line fucked?</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+</head>
+<body>
+	<h1 id="fucked-question">Is the Blue Line fucked?</h1>
+	<div id="fucked-container" class="animate-transitions flex-container center-children">
+		<div id="status-loader-container">
+			<div class="loader">
+				<!-- These empty divs are used for the CSS loader -->
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+		</div>
+		<span id="fucked-msg" class="centered-item hidden"></span>
+	</div>
+	
+	<style type="text/css">
+		/***** Element-specific selectors *****/
+		body {
+			background-color: #565a5c; /* CTA 'Sign Grey' */
+			font-family: sans-serif;
+		}
+
+		#fucked-question {
+			text-align: center;
+			color: white;
+		}
+
+		#fucked-container {
+			box-sizing: border-box;
+			max-width: 500px;
+			max-height: 100vw;
+			height: 500px;
+			border-radius: 10%;
+			margin: 10% auto;
+			padding: 5%;
+
+			cursor: pointer;
+			background-color: #00a1de; /* CTA Blue line blue */
+		}
+
+		#fucked-msg {
+			font-size: 80px;
+			text-align: center;
+			color: white;
+		}
+
+		/***** Reusable selectors *****/
+		.hidden {
+			display: none;
+		}
+
+		.flex-container {
+			display: flex;
+		}
+
+		.center-children {
+			align-items: center;
+			justify-content: center;
+		}
+
+		.animate-transitions {
+			transition: all 0.5s ease;
+		}
+
+
+		/***** CSS Loader bullshit *****/
+		/*   https://loading.io/css/   */
+		.loader {
+			display: inline-block;
+			position: relative;
+			width: 64px;
+			height: 64px;
+		}
+
+		.loader div {
+			box-sizing: border-box;
+			display: block;
+			position: absolute;
+			width: 51px;
+			height: 51px;
+			margin: 6px;
+			border: 6px solid #fff;
+			border-radius: 50%;
+			animation: loader 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+			border-color: #fff transparent transparent transparent;
+		}
+
+		.loader div:nth-child(1) {
+			animation-delay: -0.45s;
+		}
+
+		.loader div:nth-child(2) {
+			animation-delay: -0.3s;
+		}
+
+		.loader div:nth-child(3) {
+			animation-delay: -0.15s;
+		}
+
+		@keyframes loader {
+			0% {
+				transform: rotate(0deg);
+			}
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+	</style>
+	<script type="text/javascript">
+		(function() {
+			"use strict";
+
+			var FuckedStatus = {
+					YES: "Yes",
+					PARTIALLY: "Partially",
+					NO: "No",
+					NOT_SURE: "Not sure"
+				},
+				colors = {
+					BLUE_LINE: "#00a1de",
+					RED_LINE: "#c60c30",
+					PURPLE_LINE: "#522398",
+				};
+
+			function UI() {
+				var publicAPI = {},
+					statusLoader = document.getElementById("status-loader-container"),
+					fuckedMsg = document.getElementById("fucked-msg"),
+					fuckedContainer = document.getElementById("fucked-container");
+
+				function _showHideLoader(show) {
+					if(show) {
+						statusLoader.classList.remove("hidden")
+						fuckedMsg.classList.add("hidden");
+					} else {
+						statusLoader.classList.add("hidden");
+						fuckedMsg.classList.remove("hidden");
+					}
+				}
+					
+				function _setFuckedMsg(message, color) {
+					fuckedMsg.textContent = message;
+					fuckedContainer.style["background-color"] = color;
+				}
+
+				publicAPI.setFuckedStatus = function(fuckedStatus) {
+					var fuckedMsg,
+						fuckedColor;
+
+					switch(fuckedStatus) {
+						case FuckedStatus.YES:
+							fuckedMsg = "Yep";
+							fuckedColor = colors.RED_LINE;
+							break;
+						case FuckedStatus.PARTIALLY:
+							fuckedMsg = "Just the tip";
+							fuckedColor = colors.PURPLE_LINE;
+							break;
+						case FuckedStatus.NO:
+							fuckedMsg = "Nope";
+							fuckedColor = colors.BLUE_LINE;
+							break;
+						case FuckedStatus.NOT_SURE:
+						default:
+							fuckedMsg = "I don't fucking know";
+							fuckedColor = colors.PURPLE_LINE;
+							break;
+					}
+
+					_setFuckedMsg(fuckedMsg, fuckedColor);
+				};
+
+				publicAPI.on = function(eventType, listener) {
+					switch(eventType) {
+						case "messageClick":
+							fuckedContainer.addEventListener('click', listener);
+							break;
+						default:
+							throw Error(`Invalid event type: ${eventType}`)
+							break;
+					}
+				};
+
+				publicAPI.setLoading = function(isLoading) {
+					return _showHideLoader(isLoading);
+				};
+
+				publicAPI.openCTAAlertsPage = function() {
+					window.open("https://www.transitchicago.com/blueline/#alerts");
+				}
+
+				return publicAPI;
+			}
+
+			function API() {
+				var publicAPI = {};
+
+				function _makeGetRequest(url, onSuccess, onError) {
+					var req = new XMLHttpRequest();
+					req.onreadystatechange = function() {
+						var DONE = 4,
+							OK = 200,
+							responseJSON;
+						if(req.readyState === DONE) {
+							if(req.status === OK) {
+								responseJSON = JSON.parse(req.responseText)
+								onSuccess(responseJSON);
+							} else {
+								onError();
+							}
+						}
+					};
+					req.open("GET", url);
+					req.send();
+				}
+
+				publicAPI.getBlueLineRouteInfo = function(onSuccess, onFail) {
+					return _makeGetRequest(
+						"/blueLineRouteInfo",
+						function (responseData) {
+							onSuccess(responseData.CTARoutes.RouteInfo)
+						},
+						onFail
+					);
+				}
+
+				return publicAPI;
+			}
+
+			function App() {
+				var publicAPI = {},
+					api = API(),
+					ui = UI();
+
+				function _refreshData() {
+					ui.setLoading(true);
+					function finallyFunc() {
+						ui.setLoading(false);
+					}
+					api.getBlueLineRouteInfo(
+						function onSuccess(routeInfo) {
+							var fuckedStatus = _getFuckedMsgFromRouteInfo(routeInfo);
+							ui.setFuckedStatus(fuckedStatus);
+							finallyFunc();
+						},
+						function onFail() {
+							ui.setFuckedStatus(FuckedStatus.NOT_SURE);
+							finallyFunc();
+						}
+					);
+				}
+
+				function _getFuckedMsgFromRouteInfo(routeInfo) {
+					var statusMsg = routeInfo.RouteStatus;
+
+					if(statusMsg.includes("Major")) {
+						return FuckedStatus.YES;
+					} else if (statusMsg.includes("Minor")) {
+						return FuckedStatus.PARTIALLY;
+					} else {
+						return FuckedStatus.NO;
+					}
+				}
+
+				publicAPI.start = function() {
+					ui.setFuckedStatus(FuckedStatus.NOT_SURE);
+					_refreshData();
+
+					ui.on("messageClick", ui.openCTAAlertsPage);
+				}
+
+				return publicAPI;
+			}
+			
+			var app = App();
+			app.start();
+
+		})();
+	</script>
+</body>
+</html>
