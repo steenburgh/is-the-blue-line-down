@@ -283,6 +283,13 @@
 			var app = App();
 			app.start();
 
+			function logLoud(msg) {
+				var loudStyle = "font-size: 20px; color: white; background-color: black";
+				console.log(`%c${msg}`, loudStyle);
+			}
+			
+			logLoud("Curious how this site works? Want to contribute?");
+			logLoud("Check out https://github.com/steenburgh/is-the-blue-line-down/");
 		})();
 	</script>
 </body>
