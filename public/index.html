@@ -261,7 +261,7 @@
 				function _getFuckedMsgFromRouteInfo(routeInfo) {
 					var statusMsg = routeInfo.RouteStatus;
 
-					if(statusMsg.includes("Major")) {
+					if(statusMsg.includes("Major") || statusMsg.includes("Disruption")) {
 						return FuckedStatus.YES;
 					} else if (statusMsg.includes("Minor")) {
 						return FuckedStatus.PARTIALLY;
