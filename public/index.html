@@ -260,10 +260,18 @@
 
 				function _getFuckedMsgFromRouteInfo(routeInfo) {
 					var statusMsg = routeInfo.RouteStatus;
+					var FUCKED_STRINGS = {
+						YES: ["Major", "Disruption", "Significant"],
+						PARTIALLY: ["Minor", "Planned Work"]
+					};
 
-					if(statusMsg.includes("Major") || statusMsg.includes("Disruption")) {
+					function includedInStatusMsg(s) {
+						return statusMsg.includes(s);
+					}
+
+					if(FUCKED_STRINGS.YES.some(includedInStatusMsg)) {
 						return FuckedStatus.YES;
-					} else if (statusMsg.includes("Minor")) {
+					} else if (FUCKED_STRINGS.PARTIALLY.some(includedInStatusMsg)) {
 						return FuckedStatus.PARTIALLY;
 					} else {
 						return FuckedStatus.NO;
